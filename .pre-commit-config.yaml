@@ -1,0 +1,26 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: https://github.com/psf/black
+    rev: 22.8.0
+    hooks:
+    -   id: black
+        entry: black -l 120
+-   repo: local
+    hooks:
+      - id: build_all
+        name: Build Instructions
+        entry: python pre_commit_build_instructions.py
+        language: system
+        always_run: True
+-   repo: local
+    hooks:
+      - id: run_solutions
+        name: Run Solutions
+        entry: python run_solutions.py --verbose --soft --timeout 20
+        language: system
+        files: '_solution.py'
+        verbose: True

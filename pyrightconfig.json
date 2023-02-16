@@ -1,0 +1,13 @@
+{
+    "include": [
+        "."
+    ],
+    "exclude": [
+        "*.ipynb"
+    ],
+    "ignore": [],
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false,
+    "reportPrivateImportUsage": false,
+    "pythonVersion": "3.9",
+}

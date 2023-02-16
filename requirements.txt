@@ -1,0 +1,16 @@
+attrs
+einops
+jupyter
+ipywidgets
+ipykernel
+scikit-learn
+requests
+pandas
+fancy_einsum
+seaborn
+tqdm
+websockets
+get-mnist
+transformers
+tabulate
+plotly

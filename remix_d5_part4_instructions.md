@@ -320,9 +320,7 @@ From the [IOI paper](https://arxiv.org/pdf/2211.00593.pdf), we have:
 
 Congrats on completing the exploratory experiment!
 
-From here, you can either:
-* Explore how the node discovery process can be automated using Automatic Circuit Discovery Code (ACDC). You can see a demo notebook called `interp/circuit/projects/acdc/acdc.py` on the `remix-acdc` branch of the `unity` repository.
-* Read the `remix_d5_on_the_fly_CondSampler_demo.py` notebook to discover how to build conditional samplers using on-the-fly sampling.
+From here, you can read the `remix_d5_on_the_fly_CondSampler_demo.py` notebook to discover how to build conditional samplers using on-the-fly sampling.
 
 ## Additional claims
 

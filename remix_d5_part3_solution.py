@@ -1294,6 +1294,8 @@ if MAIN:
 """
 # Automatic higher order patching ("ACDC")
 
+NOTE - ACDC is not currently available in the public REMIX version. An updated version will be released at some point!
+
 At this point, hopefully it seems clear that there are a lot of similar experiments that elicit GPT-2 small's behavior on the IOI task, by iteratively applying path patching. ACDC (Automatic Circuit Discovery) is one algorithm that automates these experiments, and creates diagrams of circuits which may i) describe model behavior well, or ii) provide hints for us to interpret what model components are doing.
 
 ACDC is a greedy algorithm, finding the heads that matter directly for the output, then the heads that have largest effect on those heads, and so on (algorithm described in detail in the notebook `remix_d5_acdc.py`).

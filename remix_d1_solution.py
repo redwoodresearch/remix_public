@@ -25,7 +25,7 @@ After today's material, you should be able to:
 
 Make sure you have the following installed:
 
-`conda run -n remix pip install attrs einops jupyter ipywidgets ipykernel scikit-learn requests pandas fancy_einsum seaborn tqdm websockets get-mnist transformers tabulate plotly`
+`conda run -n remix pip install attrs einops jupyter ipywidgets ipykernel scikit-learn requests pandas fancy_einsum seaborn tqdm websockets get-mnist transformers tabulate plotly black`
 
 In VS Code, we recommend you have word wrap enabled (View -> Word Wrap).
 
@@ -122,6 +122,8 @@ If the Linear weight was stored as `(in_features, out_features)`, then data for 
 
 </details>
 """
+
+
 # %%
 class TwoLayerSkip(nn.Module):
     """Model with two Linear layers and a skip connection that bypasses the first linear-relu section."""
@@ -164,6 +166,7 @@ Run the code below to view some example images.
 train_dataset, test_dataset = remix_utils.get_mnist()
 test_inputs, test_labels = test_dataset.tensors
 
+
 # %%
 def plot_img(img: t.Tensor):
     arr = img.detach().cpu().numpy()
@@ -204,6 +207,8 @@ If this still doesn't work, call a TA as this day will be significantly harder w
 
 </details>
 """
+
+
 # %%
 @attrs.define(frozen=True)
 class Point3d:
@@ -256,6 +261,8 @@ Since the data is small, we'll run the entire test set in one large batch of siz
 
 This code is provided for you since it's very routine stuff.
 """
+
+
 # %%
 @attrs.define(frozen=True, eq=False)
 class TestResult:
@@ -515,6 +522,8 @@ Sadly, this happens all the time when using hooks. The hooks are stored in a dic
 
 </details>
 """
+
+
 # %%
 def plot_img_hook(module: nn.Module, input: tuple[t.Tensor, ...], output: t.Tensor) -> None:
     """Plot an image, assuming the module takes the image Tensor as the single positional argument."""
@@ -555,6 +564,8 @@ A limitation of hooks is that you can only hook `nn.Module` instances. A correct
 
 </details>
 """
+
+
 # %%
 def zero_ablate_hook(module: nn.Module, input: tuple[t.Tensor, ...], output: t.Tensor) -> t.Tensor:
     """Return a zero tensor with the same shape and dtype as output."""
@@ -880,6 +891,7 @@ class Circuit:
 
     def visit(self, visitor: Callable[["Circuit"], bool]) -> None:
         """Call visitor(self), and recurse into our inputs if the visitor returns True."""
+
         # Note: cache would be instantiated here, see visit_circuit_non_free
         def recurse(c: Circuit):
             should_recurse = visitor(c)
@@ -981,6 +993,8 @@ e.visit(example_visitor)
 
 Exercise: implement the methods so that the tests pass. In this case, `Array` doesn't depend on any other nodes to evaluate itself - it can just return its value field.
 """
+
+
 # %%
 class Array(Circuit):
     """Represents a learned parameter or a specific input to the network.
@@ -1286,6 +1300,8 @@ Assert that the output shape of the `torch.einsum` call matches `self.shape` - i
 </details>
 
 """
+
+
 # %%
 class Einsum(Circuit):
     """Compute torch.einsum(equation, *inputs).
@@ -1373,6 +1389,8 @@ A `Scalar` holds a single floating point value, but it can also have an arbitrar
 
 The implementation is similar to `Array` so it's provided for you.
 """
+
+
 # %%
 class Scalar(Circuit):
     """Represents a learned parameter or a specific input to the network.
@@ -1417,6 +1435,8 @@ Multiplying by a regular number is just a special case of elementwise multiplica
 
 </details>
 """
+
+
 # %%
 def scalar_mul(x: Circuit, number: float, name: Optional[str] = None) -> Einsum:
     """Return a circuit that computes number * x.
@@ -1457,6 +1477,8 @@ Elementwise multiplication between two tensors is the same idea, so we'll skip i
 
 Now that we have `scalar_multiply`, we can implement subtraction without having to write a `Subtract` subclass.
 """
+
+
 # %%
 def minus(positive: Circuit, negative: Circuit, name: Optional[str] = None) -> Add:
     """Return a circuit computing (positive - negative).
@@ -1488,6 +1510,8 @@ Circuits has an extensive API for displaying trees in plaintext or HTML, with ov
 
 Exercise: implement `_repr_tree` and verify that the printout of "sample" looks reasonable.
 """
+
+
 # %%
 def _repr_tree(circuit: Circuit, depth: int, mutable_lines: list[str]) -> None:
     """Append a one line description of circuit to mutable_lines, then recurse into inputs.
@@ -1545,6 +1569,8 @@ Normally you can pick your own node names, but to pass the unit tests in the rem
 ```
 
 """
+
+
 # %%
 def make_linear(weight: Array, bias: Array, input: Circuit, name: str) -> Add:
     """Return a circuit that performs y = x @ w^T + b."""
@@ -1640,6 +1666,8 @@ For get we want to traverse the whole tree in order to find all the matches, so 
 
 Note that the node named `x` appears twice in the tree and we do visit it twice and discover that it matches twice, but since we return a set, it isn't duplicated in the return value of `get`.
 """
+
+
 # %%
 @attrs.define(frozen=True)
 class NameMatcher:
@@ -2113,6 +2141,8 @@ You could just use `typing.cast` to get around this, but we prefer to have a run
 That's right - we need to replace the input too. In the `rust_circuits` library, these operations are done together.
 </details>
 """
+
+
 # %%
 def einsum_prepend_batch(ein: Circuit, batch_size: int) -> Einsum:
     """Return a new Einsum with a new axis b prepended to the second input and the output."""
@@ -2179,6 +2209,8 @@ Then, the thing you want to return is your `BasicUpdater`'s `update` method, bou
 
 </details>
 """
+
+
 # %%
 def make_replacer(value: t.Tensor) -> TransformIn:
     """Return a callable that can be invoked on a tree to create a new tree where nodes matching "x" are replaced with Array(value)."""
@@ -2219,6 +2251,7 @@ In order to provide an Adapter for PyTorch, we need to update the `Array(input, 
 # Another option is to just include the batch from the start, but this isn't what you would normally do so I think this is bad
 
 # TBD: maybe we don't want adapter at all - maybe we're supposed to include the loss function in our circuit (kinda complicated).
+
 
 # %%
 def circuit_test(batch_circuit: Circuit, dataset: TensorDataset, device: Union[str, t.device] = "cpu"):
@@ -2417,6 +2450,8 @@ Specifically, the private classes have a function `match_iterate` that takes the
 Exercise: implement the classes below so the test pass. For me, the order that made the most sense was to read over the code once to see which parts call each other, then try to get each test to pass in order, leaving the implementation of IterativeMatcher methods until the end.
 
 """
+
+
 # %%
 @attrs.define(frozen=True)
 class IterateMatchResults:
@@ -2443,6 +2478,7 @@ class IterativeMatcherDataBase(ABC):
 
 
 IterativeMatcherIn = Union[MatcherIn, "IterativeMatcher"]
+
 
 # %%
 @attrs.define(frozen=True, init=False)
@@ -2537,6 +2573,8 @@ class IterativeMatcher:
 ### IterativeMatcherDataPlain
 
 """
+
+
 # %%
 @attrs.define(frozen=True)
 class IterativeMatcherDataPlain(IterativeMatcherDataBase):
@@ -2575,6 +2613,7 @@ assert im_result2 == IterateMatchResults(found=False, updated=[im, im])
 ### IterativeMatcherDataFilter
 
 """
+
 
 # %%
 @attrs.define(frozen=True)
@@ -2893,6 +2932,8 @@ We implemented `BasicUpdater` earlier as a simplified version that only works wi
 
 Exercise: Implement the `_update_impl` method. It should be like the `BasicUpdater._update_impl`, but call `match_iterate` and use the appropriate `IterativeMatcher` for each input instead of always the same `Matcher`.
 """
+
+
 # %%
 @attrs.define(frozen=True)
 class Updater:
@@ -2995,6 +3036,7 @@ Exercise: implement `distribute_once`.
 """
 # TBD lowpri: hints are probably useful here
 
+
 # %%
 def distribute_once(ein: Einsum, operand_idx: int) -> Add:
     """Apply the generalized version of the distributive property: a @ (b + c) becomes (a @ b) + (a @ c).
@@ -3066,6 +3108,8 @@ Another concrete example is that if we choose a `b` that is highly correlated wi
 Exercise: implement the residual rewrite. It should be trivial - we mainly want to introduce the concept here so it's familiar later.
 
 """
+
+
 # %%
 def rewrite_residual(a: Circuit, b: Circuit) -> Circuit:
     "SOLUTION"
@@ -3176,6 +3220,8 @@ assert shape_after_index((2, 5), (1, 4)) == tuple()
 ### Index class
 
 """
+
+
 # %%
 class Index(Circuit):
     """Slice a tensor in an arbitrary number of dimensions.
@@ -3215,6 +3261,8 @@ Our circuit computes the entire logits tensor, and then just takes one logit and
 
 Exercise: implement `push_down_index_once`
 """
+
+
 # %%
 def push_down_index_once(node: Index) -> Union[Index, Relu, Add]:
     """Push the Index operation input-ward.

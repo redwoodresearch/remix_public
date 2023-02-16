@@ -102,7 +102,7 @@ After today's material, you should be able to:
 
 Make sure you have the following installed:
 
-`conda run -n remix pip install attrs einops jupyter ipywidgets ipykernel scikit-learn requests pandas fancy_einsum seaborn tqdm websockets get-mnist transformers tabulate plotly`
+`conda run -n remix pip install attrs einops jupyter ipywidgets ipykernel scikit-learn requests pandas fancy_einsum seaborn tqdm websockets get-mnist transformers tabulate plotly black`
 
 In VS Code, we recommend you have word wrap enabled (View -> Word Wrap).
 
@@ -219,20 +219,20 @@ Run the code below to view some example images.
 
 
 ```python
-(train_dataset, test_dataset) = remix_utils.get_mnist()
-(test_inputs, test_labels) = test_dataset.tensors
+train_dataset, test_dataset = remix_utils.get_mnist()
+test_inputs, test_labels = test_dataset.tensors
 
 
 def plot_img(img: t.Tensor):
     arr = img.detach().cpu().numpy()
-    (fig, ax) = plt.subplots()
+    fig, ax = plt.subplots()
     axes_img = ax.imshow(arr.reshape(28, 28), cmap="gray_r")
     fig.colorbar(axes_img)
     return fig
 
 
 for i in range(3):
-    (img, label) = train_dataset[i]
+    img, label = train_dataset[i]
     fig = plot_img(img)
     fig.suptitle(f"Ground truth label: {label.item()}")
 
@@ -331,7 +331,7 @@ results: dict[tuple[str, str], TestResult] = {}
 
 def show_results():
     rows = []
-    for ((exp_name, model), result) in results.items():
+    for (exp_name, model), result in results.items():
         rows.append((exp_name, model, result.loss, result.acc))
     return pd.DataFrame.from_records(
         rows, columns=["experiment", "model", "test_loss", "test_acc"], index=("experiment", "model")
@@ -342,8 +342,8 @@ def test(model: nn.Module, dataset: TensorDataset, device: Union[str, t.device] 
     model.eval()
     model.to(device)
     all_incorrect_indexes = []
-    (data, target) = dataset.tensors
-    (data, target) = (data.to(device), target.to(device))
+    data, target = dataset.tensors
+    data, target = (data.to(device), target.to(device))
     with torch.inference_mode():
         logits = model(data)
         test_loss = torch.nn.functional.cross_entropy(logits, target, label_smoothing=0.1).item()
@@ -358,7 +358,7 @@ def test(model: nn.Module, dataset: TensorDataset, device: Union[str, t.device] 
     )
 
 
-for (name, model) in models:
+for name, model in models:
     results["baseline", name] = result = test(model, test_dataset)
 show_results()
 
@@ -376,8 +376,8 @@ from sklearn.metrics import confusion_matrix
 
 logits_a = results["baseline", "A"].logits
 logits_b = results["baseline", "B"].logits
-(fig, axes) = plt.subplots(figsize=(5, 10), nrows=2)
-for ((name, model), ax, logits) in zip(models, axes, [logits_a, logits_b]):
+fig, axes = plt.subplots(figsize=(5, 10), nrows=2)
+for (name, model), ax, logits in zip(models, axes, [logits_a, logits_b]):
     mat = confusion_matrix(test_labels, logits.argmax(dim=-1))
     for i in range(10):
         mat[i, i] = 0
@@ -470,8 +470,8 @@ Looking at the first layer weights with Tiny Matrix and the model and output dim
 
 
 ```python
-first_weights = t.stack([model.first.weight.detach().reshape(784, 28, 28) for (_, model) in models], dim=0)
-last_weights = t.stack([model.last.weight.detach().reshape(10, 28, 28) for (_, model) in models], dim=0)
+first_weights = t.stack([model.first.weight.detach().reshape(784, 28, 28) for _, model in models], dim=0)
+last_weights = t.stack([model.last.weight.detach().reshape(10, 28, 28) for _, model in models], dim=0)
 vnt_first: VeryNamedTensor
 vnt_last: VeryNamedTensor
 "TODO: YOUR CODE HERE"
@@ -1154,7 +1154,7 @@ def einsum_string_to_spec(equation: str, *nodes: Circuit) -> EinsumSpec:
     You don't have to support the ellipsis in equations.
     You can assume the output dimensions are always provided to the right of the '->' (you don't have to infer them).
     """
-    (left, right) = equation.split("->")
+    left, right = equation.split("->")
     output_axes = tuple((ascii_to_int(char) for char in right if char != " "))
     input_axes = [tuple((ascii_to_int(char) for char in term if char != " ")) for term in left.split(",")]
     sizes = compute_spec_sizes(input_axes, [node.shape for node in nodes])
@@ -1167,7 +1167,7 @@ def compute_spec_sizes(input_axes: list[Axes], node_shapes: list[tuple[int, ...]
     This should raise an exception if the inputs are not compatible according to the rules of broadcasting.
     """
     assert len(input_axes) == len(node_shapes)
-    for (in_ax, node_shape) in zip(input_axes, node_shapes):
+    for in_ax, node_shape in zip(input_axes, node_shapes):
         assert len(in_ax) == len(node_shape)
     "TODO: YOUR CODE HERE"
     pass
@@ -1950,10 +1950,10 @@ def circuit_test(batch_circuit: Circuit, dataset: TensorDataset, device: Union[s
     return test(Adapter(), dataset, device)
 
 
-for (name, batch_circuit) in batch_circuits:
+for name, batch_circuit in batch_circuits:
     result = circuit_test(batch_circuit, test_dataset)
     results["circuit_baseline", name] = result
-for (name, _) in batch_circuits:
+for name, _ in batch_circuits:
     assert results["circuit_baseline", name].acc == results["baseline", name].acc
 show_results()
 
@@ -1970,7 +1970,7 @@ Exercise: zero ablate the output of the first layer and verify that the results 
 "TODO: Call update on each circuit to ablate, then test the updated circuit using test and Adapter. Add the result to results."
 show_results()
 print("Testing results match those previously obtained")
-for (name, _) in batch_circuits:
+for name, _ in batch_circuits:
     assert results["circuit_zero", name].acc == results["zero", name].acc
 
 ```
@@ -1996,7 +1996,7 @@ Later you'll implement a flag that terminates the update once a match is found, 
 
 ```python
 "TODO: Evaluate the circuit and compute the mean, then ablate and test. Add the result to results."
-for (name, _) in batch_circuits:
+for name, _ in batch_circuits:
     assert results["circuit_mean", name].acc == results["mean", name].acc
 show_results()
 
@@ -2650,7 +2650,7 @@ expected_cases = [arr2d[1::2], arr2d[1, :2], arr2d[1:2, 2:], arr2d[:]]
 slices: list[Union[slice, tuple[Union[int, slice], ...]]] = []
 "TODO: fill the array slices here."
 assert len(slices) == len(expected_cases)
-for (i, (expected, s)) in enumerate(zip(expected_cases, slices)):
+for i, (expected, s) in enumerate(zip(expected_cases, slices)):
     print(f"Testing case {i}")
     actual = arr2d[s]
     t.testing.assert_allclose(actual, expected)

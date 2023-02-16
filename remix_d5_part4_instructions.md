@@ -51,7 +51,7 @@ from remix_d5_part3_solution import get_attention_pattern
 ```python
 ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
-for (k, idx) in ioi_dataset.word_idx.items():
+for k, idx in ioi_dataset.word_idx.items():
     assert (idx == idx[0]).all()
 END_POS = int(ioi_dataset.word_idx["END"][0].item())
 IO_POS = int(ioi_dataset.word_idx["IO"][0].item())
@@ -63,7 +63,7 @@ flipped_IO_S_dataset = ioi_dataset.gen_flipped_prompts("IO").gen_flipped_prompts
 flipped_IO_S1_order = ioi_dataset.gen_flipped_prompts("order")
 circuit = load_and_split_gpt2(MAX_LEN)
 io_s_labels = torch.cat([ioi_dataset.io_tokenIDs.unsqueeze(1), ioi_dataset.s_tokenIDs.unsqueeze(1)], dim=1)
-(ld_circuit, group) = load_logit_diff_model(circuit, io_s_labels)
+ld_circuit, group = load_logit_diff_model(circuit, io_s_labels)
 
 ```
 
@@ -78,7 +78,7 @@ grouped_nodes_spec = {}
 
 def add_node_to_pokedex(nodes: list[Tuple[MLPHeadAndPosSpec, str]]):
     global short_names, grouped_nodes_name, grouped_nodes_spec
-    for (node, name) in nodes:
+    for node, name in nodes:
         if node not in short_names:
             short_names[node.to_name("")] = name
         if name not in grouped_nodes_name:

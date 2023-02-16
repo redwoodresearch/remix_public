@@ -40,10 +40,10 @@ import torch
 import torch as t
 import os
 from rust_circuit.model_rewrites import To, configure_transformer
-from rust_circuit.module_library import load_model_id
 from rust_circuit.py_utils import I
 from remix_d5_utils import IOIDataset, print_max_min_by_tok_k_torch
 from typing import Optional
+import remix_utils
 
 MAIN = __name__ == "__main__"
 
@@ -66,8 +66,7 @@ The `t.bind_w` circuit is short for "transformer bind weights" - it's a `Module`
 ```python
 ioi_dataset = IOIDataset(prompt_type="mixed", N=100)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
-MODEL_ID = "gelu_12_tied"
-(circ_dict, tokenizer, model_info) = load_model_id(MODEL_ID)
+circ_dict, tokenizer, model_info = remix_utils.load_gpt2_small_circuit()
 unbound_circuit = circ_dict["t.bind_w"]
 
 ```
@@ -315,7 +314,7 @@ def add_labels_to_circuit(c: rc.Circuit, tokens: torch.Tensor, labels: torch.Ten
     return (c, group)
 
 
-(logit_diff_circuit, group) = add_labels_to_circuit(logit_diff_circuit, ioi_dataset.prompts_toks, io_s_labels)
+logit_diff_circuit, group = add_labels_to_circuit(logit_diff_circuit, ioi_dataset.prompts_toks, io_s_labels)
 
 ```
 

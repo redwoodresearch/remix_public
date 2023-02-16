@@ -44,7 +44,6 @@ def get_in_out_paths():
 def build_all(force=False) -> list:
     built_files = []
     for inpath, outpath in get_in_out_paths():
-        print('Checking: ', inpath)
         if needs_build(inpath, outpath) or force:
             built_files.append(outpath)
             build_instructions(inpath, outpath)

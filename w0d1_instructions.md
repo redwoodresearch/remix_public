@@ -604,7 +604,7 @@ test_cases = [
         stride=(1,),
     ),
 ]
-for (i, case) in enumerate(test_cases):
+for i, case in enumerate(test_cases):
     actual = test_input_a.as_strided(size=case.size, stride=case.stride)
     if (case.output != actual).any():
         print(f"Test {i} failed:")

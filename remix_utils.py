@@ -52,8 +52,8 @@ def get_mnist(path="./remix_d2_data/mnist.pickle", force_download=False) -> tupl
         std = 0.3081
 
         x, y, x_test, y_test = mnist()
-        x_train = rearrange(t.tensor((x / 255.0 - mean) / std), 'b h w -> b (h w)')
-        x_test = rearrange(t.tensor((x_test / 255.0 - mean) / std), 'b h w -> b (h w)')
+        x_train = rearrange(t.tensor((x / 255.0 - mean) / std), "b h w -> b (h w)")
+        x_test = rearrange(t.tensor((x_test / 255.0 - mean) / std), "b h w -> b (h w)")
         train_dataset = TensorDataset(x_train, t.tensor(y, dtype=t.long))
         test_dataset = TensorDataset(x_test, t.tensor(y_test, dtype=t.long))
         t.save((train_dataset, test_dataset), path)
@@ -336,3 +336,12 @@ if MAIN:
     t.save(modela.state_dict(), "./remix_d2_data/model_a.pickle")
 
 # %%
+def load_gpt2_small_circuit():
+    """Load a circuit representing GPT2-small.
+
+    This requires that you have either RRFS read access or a downloaded ~/tensors_by_hash_cache folder.
+    """
+    from rust_circuit.module_library import load_transformer_model_string
+
+    with open("remix_d2_data/gelu_12_tied.circ") as f:
+        return load_transformer_model_string(f.read())

@@ -46,10 +46,10 @@ from rust_circuit import (
     ModuleSpec,
     ModuleArgSpec,
 )
-from rust_circuit.module_library import load_model_id
 from dataclasses import dataclass
 import remix_d2_utils
 from remix_d2_utils import LayerWeights, GPT2Weights, get_weights
+import remix_utils
 
 pd.set_option("display.precision", 3)
 MAIN = __name__ == "__main__"
@@ -261,6 +261,7 @@ print("Expected 0.6, got: ", replaced.evaluate())
 
 
 if "SKIP":
+
     def sum_working(x: Circuit) -> Circuit:
         """Compute the sum of x along the last dimension. This one doesn't work properly.
 
@@ -650,7 +651,7 @@ prompts = [
     "Former President of the United States of America, George",
     "Paris is the capital city of",
 ]
-circ_dict, tokenizer, model_info = load_model_id("gelu_12_tied")
+circ_dict, tokenizer, model_info = remix_utils.load_gpt2_small_circuit()
 ref_input_ids_tensor, attention_mask_tensor = tokenize(prompts)
 ref_input_ids = Array(ref_input_ids_tensor)
 # TBD lowpri: why do we need to coerce to float to prevent "MiscInputChildrenMultipleDtypesError: Children multiple dtype"?

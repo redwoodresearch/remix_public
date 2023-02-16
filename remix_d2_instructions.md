@@ -74,10 +74,10 @@ import pandas as pd
 from einops import rearrange, repeat
 import rust_circuit as rc
 from rust_circuit import Circuit, Add, Scalar, Einsum, Symbol, Array, Rearrange, Module, ModuleSpec, ModuleArgSpec
-from rust_circuit.module_library import load_model_id
 from dataclasses import dataclass
 import remix_d2_utils
 from remix_d2_utils import LayerWeights, GPT2Weights, get_weights
+import remix_utils
 
 pd.set_option("display.precision", 3)
 MAIN = __name__ == "__main__"
@@ -138,7 +138,7 @@ This particular implementation is pretty unsafe and subject to change. Its main 
 
 
 ```python
-(HIDDEN, SEQ, HEADS, MLP_PROJ, HEAD_SIZE, LOG_LIKELIHOOD_CLASSES, *__unused) = rc.symbolic_sizes()
+HIDDEN, SEQ, HEADS, MLP_PROJ, HEAD_SIZE, LOG_LIKELIHOOD_CLASSES, *__unused = rc.symbolic_sizes()
 print("The hidden dimension (dimension of the residual stream", HIDDEN)
 print("The number of classes (for our language model, the vocabulary size)", LOG_LIKELIHOOD_CLASSES)
 print("The sequence dimension (equal to the length of the context window)", SEQ)
@@ -392,7 +392,7 @@ actual_bias = t.randn((8,))
 torch_ln = TorchLayerNorm((8,))
 torch_ln.weight.data = actual_weight
 torch_ln.bias.data = actual_bias
-for (name, actual_input) in actual_inputs:
+for name, actual_input in actual_inputs:
     print(f"\nTesting LayerNorm with {name}")
     expected = torch_ln(actual_input)
     expander = rc.Expander(
@@ -577,8 +577,8 @@ def tokenize(prompts: list[str]) -> tuple[t.Tensor, t.Tensor]:
 
 
 prompts = ["Former President of the United States of America, George", "Paris is the capital city of"]
-(circ_dict, tokenizer, model_info) = load_model_id("gelu_12_tied")
-(ref_input_ids_tensor, attention_mask_tensor) = tokenize(prompts)
+circ_dict, tokenizer, model_info = remix_utils.load_gpt2_small_circuit()
+ref_input_ids_tensor, attention_mask_tensor = tokenize(prompts)
 ref_input_ids = Array(ref_input_ids_tensor)
 ref_attention_mask = Array(attention_mask_tensor.float())
 bind_module = circ_dict["t.bind_w"]
@@ -1070,7 +1070,7 @@ expected = t.tensor(
 )
 t.testing.assert_close(actual, expected)
 print("Testing attention scores with real weights, random embeddings")
-(batch, seq_len) = ref_input_ids.shape
+batch, seq_len = ref_input_ids.shape
 rand_emb = t.rand((seq_len, config.hidden_size))
 pretrained_weights = get_weights(circ_dict, bind_module)
 attn_weight = pretrained_weights.weights_by_layer[0].attn
@@ -1154,7 +1154,7 @@ ATTN_SPEC = attention_spec()
 ATTN_SPEC.check_all_inputs_used()
 ATTN_SPEC.check_unique_arg_names()
 print("Testing attention with real weights, random embeddings")
-(batch, seq_len) = ref_input_ids.shape
+batch, seq_len = ref_input_ids.shape
 rand_emb = t.rand((batch, seq_len, config.hidden_size))
 pretrained_weights = get_weights(circ_dict, bind_module)
 pretrained_weights.set_attention_mask(Array(causal_mask(seq_len).float()))

@@ -105,7 +105,7 @@ Thus, the name position is the same for all sequences. Because sentences are ali
 ```python
 ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
-for (k, idx) in ioi_dataset.word_idx.items():
+for k, idx in ioi_dataset.word_idx.items():
     assert (idx == idx[0]).all()
 END_POS = int(ioi_dataset.word_idx["END"][0].item())
 IO_POS = int(ioi_dataset.word_idx["IO"][0].item())
@@ -138,7 +138,7 @@ We will then load the model using the steps described previously. First the main
 ```python
 circuit = load_and_split_gpt2(MAX_LEN)
 io_s_labels = torch.cat([ioi_dataset.io_tokenIDs.unsqueeze(1), ioi_dataset.s_tokenIDs.unsqueeze(1)], dim=1)
-(ld_circuit, group) = load_logit_diff_model(circuit, io_s_labels)
+ld_circuit, group = load_logit_diff_model(circuit, io_s_labels)
 ld_circuit = rc.cast_circuit(ld_circuit, rc.TorchDeviceDtypeOp(device=DEVICE))
 
 ```
@@ -720,7 +720,8 @@ This restriction was unnecessary for `extender_factory` we defined earlier: as w
 ```python
 def add_path_to_group(m: rc.IterativeMatcher, nodes_group: List[str], term_if_matches=True, qkv: Optional[str] = None):
     """Add the path from a matcher to a group of nodes using chain operation. Different filtering parameters.
-    If `term_if_matches=False` and `qkv` is not `None`, the `qkv` restrition will only be applied on the path to the first nodes found starting from `m`, indirect effect will not be restricted by `qkv`."""
+    If `term_if_matches=False` and `qkv` is not `None`, the `qkv` restrition will only be applied on the path to the first nodes found starting from `m`, indirect effect will not be restricted by `qkv`.
+    """
     assert qkv in ["q", "k", "v", None]
     nodes_to_ban = ALL_NODES_NAMES.difference(set(nodes_group))
     if qkv is None:
@@ -765,7 +766,8 @@ qkv_names = [f"a{i}.q" for i in range(12)] + [f"a{i}.k" for i in range(12)] + [f
 
 def keep_nodes_on_path(path: list[rc.Circuit], nodes_to_keep: set[str]) -> list[str]:
     """
-    Given a path as a list of nodes, create the list of the names of the nodes present in `nodes_to_keep`, in the order they appear in the path."""
+    Given a path as a list of nodes, create the list of the names of the nodes present in `nodes_to_keep`, in the order they appear in the path.
+    """
     filtered_path = []
     "TODO: YOUR CODE HERE"
     return filtered_path
@@ -781,11 +783,11 @@ def print_all_heads_paths(
         nodes_to_include = set(ALL_NODES_NAMES)
     nodes_to_include.add("logits")
     all_paths = matcher.get_all_paths(circuit)
-    for (target, paths) in all_paths.items():
+    for target, paths in all_paths.items():
         print()
         print(f"--- paths to {target.name} ---")
         already_printed = set()
-        for (i, path) in enumerate(paths):
+        for i, path in enumerate(paths):
             if print_by_class:
                 nodes_to_print = keep_nodes_on_path(path, nodes_to_include)
                 class_to_print = []
@@ -816,7 +818,7 @@ grouped_nodes_spec: dict[str, list[MLPHeadAndPosSpec]] = {}
 
 def add_node_to_pokedex(nodes: list[Tuple[MLPHeadAndPosSpec, str]]):
     global short_names, grouped_nodes_name, grouped_nodes_spec
-    for (node, name) in nodes:
+    for node, name in nodes:
         if node not in short_names:
             short_names[node.to_name("")] = name
         if name not in grouped_nodes_name:
@@ -1233,7 +1235,7 @@ def get_attention_pattern(c: rc.Circuit, heads: List[Tuple[int, int]], toks: tor
     assert toks.ndim == 2
     seq_len = toks.shape[1]
     attn_patterns = torch.zeros((len(heads), len(toks), seq_len, seq_len))
-    for (i, (l, h)) in enumerate(heads):
+    for i, (l, h) in enumerate(heads):
         "TODO: YOUR CODE HERE"
     return attn_patterns
 

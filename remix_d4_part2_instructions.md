@@ -92,7 +92,7 @@ Step 1: Initial loading
 
 
 ```python
-(circ_dict, _, model_info) = load_model_id(MODEL_ID)
+circ_dict, _, model_info = load_model_id(MODEL_ID)
 circuit = circ_dict["t.bind_w"]
 
 ```
@@ -223,7 +223,7 @@ def paren_experiment(
         labels = ref_ds.is_balanced.value
 
         def loss_str(mask):
-            (loss, correct) = bce_with_logits_loss(logits[mask], labels[mask])
+            loss, correct = bce_with_logits_loss(logits[mask], labels[mask])
             loss = loss.cpu()
             std_err = loss.std() / len(loss) ** 0.5
             return f"{loss.mean():.3f}  SE={std_err:.3f}  acc={correct.float().mean():.1%} "
@@ -277,14 +277,14 @@ corr0a = Correspondence()
 if MAIN:
     tests.t_ex0a_corr(corr0a)
     print("\nEx0a: Exact sampling")
-    (ex0a, loss0a) = paren_experiment(circuit, ds, corr0a)
+    ex0a, loss0a = paren_experiment(circuit, ds, corr0a)
     check_loss(loss0a, 0, 0.01)
 corr0b = Correspondence()
 "TODO: Your code here"
 if MAIN:
     tests.t_ex0b_corr(corr0b)
     print("\nEx0b: Interchanging logits")
-    (ex0b, loss0b) = paren_experiment(circuit, ds, corr0b)
+    ex0b, loss0b = paren_experiment(circuit, ds, corr0b)
     check_loss(loss0b, 4.3, 0.12)
 
 ```
@@ -377,7 +377,7 @@ def make_ex1_corr(cs_for_h10_and_h20: CondSampler) -> Correspondence:
 if MAIN:
     print("\nEx1a: Just the count cond")
     tests.t_ex1_corr(make_ex1_corr, count_cond)
-    (ex1a, loss1a) = paren_experiment(circuit, ds, make_ex1_corr(count_cond))
+    ex1a, loss1a = paren_experiment(circuit, ds, make_ex1_corr(count_cond))
     check_loss(loss1a, 0.52, 0.04)
     if PRINT_CIRCUITS:
         ex1a.print()
@@ -436,7 +436,7 @@ if MAIN:
 if MAIN:
     print("\nEx1b: Without a0")
     tests.t_ex1_corr(make_ex1_corr, count_open_cond)
-    (ex1b, loss1b) = paren_experiment(circuit, ds, make_ex1_corr(count_open_cond))
+    ex1b, loss1b = paren_experiment(circuit, ds, make_ex1_corr(count_open_cond))
     check_loss(loss1b, 0.3, 0.04)
     if PRINT_CIRCUITS:
         ex1b.print()
@@ -540,7 +540,7 @@ def make_ex2_part1_corr() -> Correspondence:
 if MAIN:
     tests.t_make_ex2_part1_corr(make_ex2_part1_corr())
     print("\nEx 2 part 1: 1.0/2.0 depend on position 1 input")
-    (ex2_p1, loss2_p1) = paren_experiment(ex2_part1_circuit, ds, make_ex2_part1_corr())
+    ex2_p1, loss2_p1 = paren_experiment(ex2_part1_circuit, ds, make_ex2_part1_corr())
 
 ```
 
@@ -607,7 +607,7 @@ def make_ex2_part2_corr() -> Correspondence:
 if MAIN:
     tests.t_ex2_part2_corr(make_ex2_part2_corr())
     print("\nEx 2 part 2 (2a in writeup): 1.0/2.0 depend on position 0.0 and emb")
-    (ex2a, loss2a) = paren_experiment(ex2_part2_circuit, ds, make_ex2_part2_corr())
+    ex2a, loss2a = paren_experiment(ex2_part2_circuit, ds, make_ex2_part2_corr())
     check_loss(loss2a, 0.55, 0.04)
 
 ```
@@ -673,7 +673,7 @@ def make_ex2_part3_corr() -> Correspondence:
 if MAIN:
     tests.t_ex2_part3_corr(make_ex2_part3_corr())
     print("\nEx 2 part 3: Projecting h00 into one direction")
-    (ex2_p3, loss2_p3) = paren_experiment(ex2_part3_circuit, ds, make_ex2_part3_corr())
+    ex2_p3, loss2_p3 = paren_experiment(ex2_part3_circuit, ds, make_ex2_part3_corr())
 
 ```
 
@@ -735,7 +735,7 @@ def make_ex2_part4_corr() -> Correspondence:
 if MAIN:
     tests.t_ex2_part4_corr(make_ex2_part4_corr())
     print("Ex2 part 4 (2b in writeup): replace a0 by phi(p)")
-    (ex2b, loss2b) = paren_experiment(ex2_part4_circuit, ds, make_ex2_part4_corr())
+    ex2b, loss2b = paren_experiment(ex2_part4_circuit, ds, make_ex2_part4_corr())
     check_loss(loss2b, 0.53, 0.04)
 
 ```
@@ -834,10 +834,10 @@ if MAIN:
     print("splitting up 2.1 input by seqpos")
     tests.t_make_ex3_corr(make_ex3_corr)
     print("\nEx3a: first with real open proportion")
-    (ex3a, loss3a) = paren_experiment(ex3_circuit, ds, make_ex3_corr(adjusted=False))
+    ex3a, loss3a = paren_experiment(ex3_circuit, ds, make_ex3_corr(adjusted=False))
     check_loss(loss3a, 1.124, 0.1)
     print("\nEx3b: now with adjusted open proportion")
-    (ex3b, loss3b) = paren_experiment(ex3_circuit, ds, make_ex3_corr(adjusted=True))
+    ex3b, loss3b = paren_experiment(ex3_circuit, ds, make_ex3_corr(adjusted=True))
     check_loss(loss3b, 1.14, 0.1)
     if PRINT_CIRCUITS:
         ex3b.print()
@@ -855,7 +855,7 @@ if MAIN and PRINT_CIRCUITS:
     printer.print(ex4_circuit)
 if MAIN:
     print("\nEx4: Ex2b (1.0 and 2.0 phi rewrite) + Ex3b (2.1 split by seqpos with p_adj)")
-    (ex4, loss4) = paren_experiment(ex4_circuit, ds, ex4_corr)
+    ex4, loss4 = paren_experiment(ex4_circuit, ds, ex4_corr)
     check_loss(loss4, 1.7, 0.1)
 
 ```

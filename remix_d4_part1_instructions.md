@@ -257,7 +257,7 @@ def get_parents_and_children(i: InterpNode):
 
 
 def step_sampler(parents_and_children: List[Tuple[InterpNode, InterpNode]]):
-    for (p, c) in parents_and_children:
+    for p, c in parents_and_children:
         c._sample_into(generator, ds, sampled_inputs.datasets[p], into=sampled_inputs, recursive=False)
         yield
 
@@ -334,13 +334,13 @@ already_scrubbed_inputs: Dict[rc.IterativeMatcher, InterpNode] = {}
 
 def colorer(c: rc.Circuit, super: rc.Circuit) -> str:
     color = "darkgrey"
-    for (m, i) in already_scrubbed.items():
+    for m, i in already_scrubbed.items():
         m_endpoints = m.get(super)
         if c in m_endpoints:
             color = color_dataset(sampled_inputs.datasets[i], html=True)
         elif color == "darkgrey" and i.is_leaf() and c.are_any_found(m_endpoints):
             color = "lightgrey"
-    for (m, i) in already_scrubbed_inputs.items():
+    for m, i in already_scrubbed_inputs.items():
         m_endpoints = m.get(super)
         if c in m_endpoints:
             color = color_dataset(sampled_inputs.datasets[i], html=True)
@@ -349,10 +349,10 @@ def colorer(c: rc.Circuit, super: rc.Circuit) -> str:
 
 def commenter(c: rc.Circuit, super: rc.Circuit) -> str:
     comment = ""
-    for (m, i) in already_scrubbed.items():
+    for m, i in already_scrubbed.items():
         if c in m.get(super):
             comment = i.str_samplers(sampled_inputs)
-    for (m, i) in already_scrubbed_inputs.items():
+    for m, i in already_scrubbed_inputs.items():
         if c in m.get(super):
             comment = f"ds set by '{i.name}': {sampled_inputs[i]}"
     return comment
@@ -366,7 +366,7 @@ po = rc.PrintHtmlOptions(
 
 
 def step_scrubber(ex: Experiment, circuit: rc.Circuit):
-    for (interp_node, m) in ex.nodes.in_dfs_order():
+    for interp_node, m in ex.nodes.in_dfs_order():
         print(interp_node)
         input_matcher = to_inputs(m, ex.dataset)
         already_scrubbed[m] = interp_node

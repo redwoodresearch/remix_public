@@ -7,9 +7,8 @@ import rust_circuit as rc
 from tabulate import tabulate
 from rust_circuit.algebric_rewrite import split_to_concat
 from rust_circuit.model_rewrites import To, configure_transformer
-from rust_circuit.module_library import load_model_id
 from rust_circuit.py_utils import I
-
+import remix_utils
 
 ABBA_TEMPLATES = [
     "<|endoftext|>Then, {IO} and {S1} went to the {PLACE}. {S2} gave a {OBJECT} to",
@@ -456,10 +455,8 @@ def add_labels_to_circuit(c: rc.Circuit, labels: torch.Tensor):
 
 
 def load_and_split_gpt2(max_len: int):
-    """Only intended to be used for sudying IOI. The renaming are made to match the path patching code. See GPT2_model_loading.py for an explaination."""
-
-    MODEL_ID = "gelu_12_tied"  # aka gpt2 small
-    circ_dict, tokenizer, model_info = load_model_id(MODEL_ID)
+    """Only intended to be used for studying IOI. The renaming are made to match the path patching code. See GPT2_model_loading.py for an explaination."""
+    circ_dict, tokenizer, model_info = remix_utils.load_gpt2_small_circuit()
     unbound_circuit = circ_dict["t.bind_w"]
 
     tokens_arr = rc.Array(torch.zeros(max_len).to(torch.long), name="tokens")

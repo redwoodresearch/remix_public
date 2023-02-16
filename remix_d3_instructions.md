@@ -110,7 +110,7 @@ Again, this will take some time on the first run.
 
 
 ```python
-(loaded, tokenizer, extra_args) = load_model_id("attention_only_2")
+loaded, tokenizer, extra_args = load_model_id("attention_only_2")
 
 ```
 
@@ -158,7 +158,7 @@ Move the dataset and model to the GPU:
 
 ```python
 toks_int_values = rc.cast_circuit(toks_int_values, rc.TorchDeviceDtypeOp(device=DEVICE, dtype="int64")).cast_array()
-loaded = {s: rc.cast_circuit(c, rc.TorchDeviceDtypeOp(device=DEVICE)) for (s, c) in loaded.items()}
+loaded = {s: rc.cast_circuit(c, rc.TorchDeviceDtypeOp(device=DEVICE)) for s, c in loaded.items()}
 
 ```
 

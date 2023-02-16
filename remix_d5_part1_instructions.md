@@ -72,7 +72,7 @@ This variable of type `Dict[str,torch.Tensor]` is dictionary that maps the name 
 
 ```python
 print(ioi_dataset.prompts_text[0])
-for (k, v) in ioi_dataset.word_idx.items():
+for k, v in ioi_dataset.word_idx.items():
     print(f" The token {k} is at position {v[0]}")
 
 ```

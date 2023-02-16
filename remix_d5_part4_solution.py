@@ -14,7 +14,8 @@ import sys
 
 # %%
 MAIN = __name__ == "__main__"
-
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 
 if "SKIP":
     # Skip CI for now - avoids downloading GPT2
@@ -84,7 +85,7 @@ from remix_d5_part3_solution import get_attention_pattern
 """
 # %%
 
-ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1)
+ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1, device=DEVICE)
 
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]  # maximal length
 

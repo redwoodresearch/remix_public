@@ -14,6 +14,8 @@ import os
 import sys
 
 MAIN = __name__ == "__main__"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 from remix_d5_utils import IOIDataset, load_and_split_gpt2, load_logit_diff_model
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 import plotly.express as px
@@ -49,7 +51,7 @@ from remix_d5_part3_solution import get_attention_pattern
 
 
 ```python
-ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1)
+ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1, device=DEVICE)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
 for k, idx in ioi_dataset.word_idx.items():
     assert (idx == idx[0]).all()

@@ -24,6 +24,7 @@ After today's material, you should be able to:
 """
 import os
 import sys
+import torch
 from rust_circuit.causal_scrubbing.dataset import Dataset
 from rust_circuit.causal_scrubbing.experiment import (
     Experiment,
@@ -40,7 +41,8 @@ from remix_d5_utils import (
     load_logit_diff_model,
 )
 
-DEVICE = "cuda:0" # will be painfully slow on CPU
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 MAIN = __name__ == "__main__"  # this notebook will be imported. We don't want to run long experiment during import
 
 
@@ -58,7 +60,6 @@ if "SKIP":
 
 import time
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union, cast
-from typing import NamedTuple
 import plotly.express as px
 import rust_circuit as rc
 import torch
@@ -74,7 +75,6 @@ from rust_circuit.causal_scrubbing.hypothesis import (
 )
 import remix_utils
 from remix_d5_utils import HeadOrMlpType, AttnSuffixForGpt, MLPHeadAndPosSpec
-
 
 
 # %%
@@ -97,7 +97,7 @@ Thus, the name position is the same for all sequences. Because sentences are ali
 
 # %%
 
-ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1)
+ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1, device=DEVICE)
 
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
 
@@ -323,7 +323,6 @@ def iterative_path_patching(
     sampler = rc.Sampler(rc.RunDiscreteVarAllSpec([group]))
     nb_not_found = 0
     for matcher_extender in matcher_extenders:
-
         if "SOLUTION":
             matchers_to_h = []
             for node in nodes_to_connect:
@@ -709,7 +708,7 @@ To conclude, we can clearly observe attention heads significantly contributing t
 """
 # %%
 if MAIN:
-    total = variation_ld_flipped_S + variation_ld_flipped_IO # type: ignore
+    total = variation_ld_flipped_S + variation_ld_flipped_IO  # type: ignore
     show_mtx(
         total.cpu(),
         title="Sum of the two logit diff variation (flipped IO + flipped S)",
@@ -762,7 +761,7 @@ if "SOLUTION":
 if "SOLUTION":
     if MAIN:
         show_mtx(
-            (variation_ld_flipped_S_IO - (variation_ld_flipped_S + variation_ld_flipped_IO)).cpu(), # type: ignore
+            (variation_ld_flipped_S_IO - (variation_ld_flipped_S + variation_ld_flipped_IO)).cpu(),  # type: ignore
             title="Residual error from linear model (variation_ld_flipped_S_IO-(variation_ld_flipped_S+variation_ld_flipped_IO) ).",
         )
 
@@ -852,7 +851,8 @@ def add_path_to_group(
     qkv: Optional[str] = None,
 ):
     """Add the path from a matcher to a group of nodes using chain operation. Different filtering parameters.
-    If `term_if_matches=False` and `qkv` is not `None`, the `qkv` restrition will only be applied on the path to the first nodes found starting from `m`, indirect effect will not be restricted by `qkv`."""
+    If `term_if_matches=False` and `qkv` is not `None`, the `qkv` restrition will only be applied on the path to the first nodes found starting from `m`, indirect effect will not be restricted by `qkv`.
+    """
 
     assert qkv in ["q", "k", "v", None]
 
@@ -915,7 +915,8 @@ qkv_names = [f"a{i}.q" for i in range(12)] + [f"a{i}.k" for i in range(12)] + [f
 
 def keep_nodes_on_path(path: list[rc.Circuit], nodes_to_keep: set[str]) -> list[str]:
     """
-    Given a path as a list of nodes, create the list of the names of the nodes present in `nodes_to_keep`, in the order they appear in the path."""
+    Given a path as a list of nodes, create the list of the names of the nodes present in `nodes_to_keep`, in the order they appear in the path.
+    """
     filtered_path = []
     if "SOLUTION":
         for x in path:
@@ -929,7 +930,6 @@ def print_all_heads_paths(
     show_qkv=False,
     short_names: Union[Dict[str, str], None] = None,
 ):
-
     print_by_class = short_names is not None
     if show_qkv:
         nodes_to_include = set(list(ALL_NODES_NAMES) + ["a.q", "a.k", "a.v"])
@@ -1286,9 +1286,11 @@ if "SOLUTION":
 
 
 if MAIN:
-    assert torch.isclose(results_K_comp_IO_NM[:3, 5], torch.tensor([0.0247, -0.0080, 0.0115], device=DEVICE), atol=1e-4).all()
+    assert torch.isclose(
+        results_K_comp_IO_NM[:3, 5], torch.tensor([0.0247, -0.0080, 0.0115], device=DEVICE), atol=1e-4
+    ).all()
 
-#%%
+# %%
 """
 # Automatic higher order patching ("ACDC")
 

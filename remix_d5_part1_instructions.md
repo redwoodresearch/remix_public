@@ -32,9 +32,12 @@ After going through this material, you should be able to:
 
 ```python
 from copy import deepcopy
+import torch
 from remix_d5_utils import IOIDataset
 
 MAIN = __name__ == "__main__"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 
 ```
 
@@ -48,7 +51,7 @@ Exercise: Is IOIDataset deterministic, or are the prompts random each time?
 
 
 ```python
-ioi_dataset = IOIDataset(3, prompt_type="mixed", seed=78)
+ioi_dataset = IOIDataset(3, prompt_type="mixed", seed=78, device=DEVICE)
 print("Prompts: ", ioi_dataset.prompts_text)
 print("Tokens: ", ioi_dataset.prompts_toks)
 
@@ -107,7 +110,9 @@ You can use metadata to create copies (or modification) of the dataset. In this 
 ```python
 new_metadata = deepcopy(ioi_dataset.prompts_metadata)
 new_metadata[0]["S"] = "Robert"
-new_ioi_dataset = IOIDataset(N=ioi_dataset.N, prompt_type=ioi_dataset.prompt_type, manual_metadata=new_metadata)
+new_ioi_dataset = IOIDataset(
+    N=ioi_dataset.N, prompt_type=ioi_dataset.prompt_type, manual_metadata=new_metadata, device=DEVICE
+)
 print(f"Original prompt: {ioi_dataset.prompts_text[0]}")
 print(f"New prompt: {new_ioi_dataset.prompts_text[0]}")
 
@@ -183,7 +188,7 @@ def order_flip(dataset: IOIDataset) -> IOIDataset:
     pass
 
 
-original = IOIDataset(3, prompt_type="mixed")
+original = IOIDataset(3, prompt_type="mixed", device=DEVICE)
 original = original.gen_flipped_prompts("S2")
 flipped_order = order_flip(original)
 assert flipped_order.prompt_family == "ABC"

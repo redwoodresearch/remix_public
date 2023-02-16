@@ -62,11 +62,11 @@ from rust_circuit.causal_scrubbing.hypothesis import (
 )
 from rust_circuit.algebric_rewrite import residual_rewrite, split_to_concat
 from rust_circuit.model_rewrites import To, configure_transformer
-from rust_circuit.module_library import load_model_id
 from rust_circuit.py_utils import I
 from torch.nn.functional import binary_cross_entropy_with_logits
 import remix_d4_part2_test as tests
 from remix_d4_part2_setup import ParenDataset, ParenTokenizer, get_h00_open_vector
+import remix_utils
 
 MAIN = __name__ == "__main__"
 SEQ_LEN = 42
@@ -76,7 +76,8 @@ PRINT_CIRCUITS = True
 ACTUALLY_RUN = True
 SLOW_EXPERIMENTS = True
 DEFAULT_CHECKS: ExperimentCheck = True
-EVAL_DEVICE = "cpu"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device:", DEVICE)
 MAX_MEMORY = 20000000000
 BATCH_SIZE = 2000
 
@@ -92,7 +93,7 @@ Step 1: Initial loading
 
 
 ```python
-circ_dict, _, model_info = load_model_id(MODEL_ID)
+circ_dict, _, model_info = remix_utils.load_paren_balancer()
 circuit = circ_dict["t.bind_w"]
 
 ```
@@ -171,7 +172,7 @@ printer = rc.PrintHtmlOptions(
 )
 if PRINT_CIRCUITS:
     printer.print(circuit)
-circuit = rc.cast_circuit(circuit, rc.TorchDeviceDtypeOp(device=EVAL_DEVICE))
+circuit = rc.cast_circuit(circuit, rc.TorchDeviceDtypeOp(device=DEVICE))
 
 ```
 
@@ -180,7 +181,7 @@ We have a custom dataset class that precomputes some features of paren sequences
 
 
 ```python
-ds = ParenDataset.load(device=EVAL_DEVICE)
+ds = ParenDataset.load(device=DEVICE)
 
 
 def bce_with_logits_loss(logits: torch.Tensor, labels: torch.Tensor):
@@ -214,7 +215,7 @@ def paren_experiment(
         logits = scrubbed.evaluate(
             ExperimentEvalSettings(
                 optim_settings=rc.OptimizationSettings(max_memory=MAX_MEMORY, scheduling_naive=True),
-                device_dtype=EVAL_DEVICE,
+                device_dtype=DEVICE,
                 optimize=True,
                 batch_size=batch_size,
             )

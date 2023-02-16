@@ -70,13 +70,15 @@ from pprint import pprint
 import rust_circuit as rc
 import torch
 from rust_circuit.model_rewrites import To, configure_transformer
-from rust_circuit.module_library import load_model_id, negative_log_likelyhood
+from rust_circuit.module_library import negative_log_likelyhood
 from rust_circuit.py_utils import S, I
 from torch.testing import assert_close
 import remix_d3_test as tests
+import remix_utils
 
 MAIN = __name__ == "__main__"
-DEVICE = "cuda:0"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device:", DEVICE)
 
 ```
 
@@ -110,7 +112,7 @@ Again, this will take some time on the first run.
 
 
 ```python
-loaded, tokenizer, extra_args = load_model_id("attention_only_2")
+loaded, tokenizer, extra_args = remix_utils.load_attention_only_2()
 
 ```
 

@@ -21,15 +21,17 @@ After going through this material, you should be able to:
 
 """
 
-#%%
+# %%
 # get_ipython().run_line_magic("load_ext", "autoreload")
 # get_ipython().run_line_magic("autoreload", "2")
-
 from copy import deepcopy
 
+import torch
 from remix_d5_utils import IOIDataset
 
 MAIN = __name__ == "__main__"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 
 # %%
 """
@@ -42,7 +44,7 @@ Exercise: Try out the different types of prompt. You should be able to Ctrl+Clic
 Exercise: Is IOIDataset deterministic, or are the prompts random each time?
 """
 # %%
-ioi_dataset = IOIDataset(3, prompt_type="mixed", seed=78)
+ioi_dataset = IOIDataset(3, prompt_type="mixed", seed=78, device=DEVICE)
 print("Prompts: ", ioi_dataset.prompts_text)
 print("Tokens: ", ioi_dataset.prompts_toks)
 # %%
@@ -99,7 +101,7 @@ new_metadata = deepcopy(ioi_dataset.prompts_metadata)
 new_metadata[0]["S"] = "Robert"
 
 new_ioi_dataset = IOIDataset(
-    N=ioi_dataset.N, prompt_type=ioi_dataset.prompt_type, manual_metadata=new_metadata
+    N=ioi_dataset.N, prompt_type=ioi_dataset.prompt_type, manual_metadata=new_metadata, device=DEVICE
 )
 
 print(f"Original prompt: {ioi_dataset.prompts_text[0]}")
@@ -186,10 +188,11 @@ def order_flip(dataset: IOIDataset) -> IOIDataset:
         prompt_type=dataset.prompt_type,
         manual_metadata=new_prompts_metadata,
         prompt_family=dataset.prompt_family,
+        device=DEVICE,
     )
 
 
-original = IOIDataset(3, prompt_type="mixed")
+original = IOIDataset(3, prompt_type="mixed", device=DEVICE)
 original = original.gen_flipped_prompts(
     "S2"
 )  # An arbitrary flip to make it from the ABC family. When created `original`` is from the IOI family.
@@ -202,12 +205,8 @@ flipped_order = order_flip(original)
 assert flipped_order.prompt_family == "ABC"
 
 for i in range(len(flipped_order)):
-    assert (
-        flipped_order.prompts_metadata[i]["IO2"] == original.prompts_metadata[i]["IO1"]
-    )
-    assert (
-        flipped_order.prompts_metadata[i]["IO1"] == original.prompts_metadata[i]["IO2"]
-    )
+    assert flipped_order.prompts_metadata[i]["IO2"] == original.prompts_metadata[i]["IO1"]
+    assert flipped_order.prompts_metadata[i]["IO1"] == original.prompts_metadata[i]["IO2"]
     assert flipped_order.prompts_metadata[i]["S"] == original.prompts_metadata[i]["S"]
 
 # %%
@@ -220,8 +219,8 @@ The _values_ of IO1 and IO2 were changed, but the position of the words labeled 
 """
 print(flipped_order.word_idx["IO1"], original.word_idx["IO2"])
 
-print('Test 1: ', (flipped_order.word_idx["IO1"] == original.word_idx["IO2"]).all())
+print("Test 1: ", (flipped_order.word_idx["IO1"] == original.word_idx["IO2"]).all())
 
-print('Test 2: ', (flipped_order.word_idx["IO2"] == original.word_idx["IO1"]).all())
+print("Test 2: ", (flipped_order.word_idx["IO2"] == original.word_idx["IO1"]).all())
 
 # %%

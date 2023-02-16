@@ -30,17 +30,19 @@ from pprint import pprint
 import rust_circuit as rc
 import torch
 from rust_circuit.model_rewrites import To, configure_transformer
-from rust_circuit.module_library import load_model_id, negative_log_likelyhood
+from rust_circuit.module_library import negative_log_likelyhood
 from rust_circuit.py_utils import S, I
 from torch.testing import assert_close
 
 import remix_d3_test as tests
+import remix_utils
 
 # build instructions and commit with something like:
 # ~/unity/interp/demos/causal_scrubbing$ python ~/mlab2/build_instructions.py induction.py induction_instructions.md && git commit -am "d3 wip" --no-verify && git push
 MAIN = __name__ == "__main__"
-DEVICE = "cuda:0"
-# DEVICE = "cpu" # currently so slow as to be unusable
+# On my Mac this took 44 minutes to run on CPU
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device:", DEVICE)
 
 if "SKIP":
     # CI takes longer than 20s timeout right now, just skip CI
@@ -61,8 +63,8 @@ As discussed in Day 2, when we parse a string representation of a `Circuit`, `rc
 """
 # %%
 seq_len = 300  # longer seq len is better, but short makes stuff a bit easier...
-#n_files = 12
-#reload_dataset = False
+# n_files = 12
+# reload_dataset = False
 # This doesn't work without Unity but you shouldn't have to do it
 # if reload_dataset:
 #     from interp.tools.data_loading import get_val_seqs
@@ -86,7 +88,7 @@ To inspect the data we need the `tokenizer` that was used to convert text to tok
 Again, this will take some time on the first run.
 """
 # %%
-loaded, tokenizer, extra_args = load_model_id("attention_only_2")
+loaded, tokenizer, extra_args = remix_utils.load_attention_only_2()
 # %% [markdown]
 """
 Exercise: convert the first two training examples back to text using [`tokenizer.batch_decode`](https://huggingface.co/docs/transformers/main_classes/tokenizer#transformers.PreTrainedTokenizer.batch_decode) and manually inspect the data. Can you spot opportunities for induction or induction-like behaviors to help with predictions?
@@ -114,9 +116,7 @@ Exercise: What is the longest token in this set of good induction candidates?
 Optional exercise: Find a non-English token. What does it mean? Does it kinda make sense that this token would benefit from induction?
 """
 # %%
-good_induction_candidate = torch.load(f"remix_d3_data/induction_candidates.pt").to(
-    device=DEVICE, dtype=torch.float32
-)
+good_induction_candidate = torch.load(f"remix_d3_data/induction_candidates.pt").to(device=DEVICE, dtype=torch.float32)
 
 if "SOLUTION":
     if MAIN:
@@ -612,6 +612,8 @@ assert (
 """
 ### Setting up sampler
 """
+
+
 # %%
 def sample_and_evaluate(c: rc.Circuit, num_samples: int = 16 * 128, batch_size=32) -> float:
     """
@@ -690,6 +692,8 @@ Concretely, we run our model on random inputs, while computing the loss w.r.t. t
 
 Exercise: implement `scrub_input` and use it to replace the inputs to the model with uncorrelated inputs. You need to define the `rc.IterativeMatcher` `unused_baseline_path` so that `scrub_input` replaces the inputs but not the labels.
 """
+
+
 # %%
 def scrub_input(c: rc.Circuit, in_path: rc.IterativeMatcher) -> rc.Circuit:
     """Replace all instances of `toks_int_var` descended from in_path with `toks_int_var_other`"""
@@ -1129,7 +1133,7 @@ else:
 
 if MAIN:
     scrubbed_all = scrub_input(with_a1_ind_inputs, combined_matcher)
-    all_out = sample_and_evaluate(scrubbed_all, num_samples=32*128)
+    all_out = sample_and_evaluate(scrubbed_all, num_samples=32 * 128)
     all_loss_rec = loss_recovered(all_out)
     print(f"Loss recovered by whole hypothesis (try increasing num_samples if this narrowly fails): {all_loss_rec:.3f}")
     assert_close(all_loss_rec, 0.37, atol=1e-2, rtol=1e-2)

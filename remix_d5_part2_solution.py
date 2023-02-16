@@ -32,6 +32,8 @@ from typing import Optional
 import remix_utils
 
 MAIN = __name__ == "__main__"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 
 if "SKIP":
     # Skip CI for now - avoids downloading GPT2
@@ -56,7 +58,7 @@ You've probably loaded this model in Day 2, but if not then this will take some 
 The `t.bind_w` circuit is short for "transformer bind weights" - it's a `Module` with the pretrained weights included, but no token or positional embeddings yet. 
 """
 # %%
-ioi_dataset = IOIDataset(prompt_type="mixed", N=100)
+ioi_dataset = IOIDataset(prompt_type="mixed", N=100, device=DEVICE)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]  # maximal length
 circ_dict, tokenizer, model_info = remix_utils.load_gpt2_small_circuit()
 unbound_circuit = circ_dict["t.bind_w"]
@@ -227,6 +229,8 @@ We'll want to have the ability to target only specific sequence positions for in
 
 Exercise: implement `split_to_concat_axis_0`.
 """
+
+
 # %%
 def split_to_concat_axis_0(c: rc.Circuit) -> rc.Concat:
     """Turns `c` into `Concat(c[0:1], c[1:2], ...)`.
@@ -288,6 +292,8 @@ We also replace the tokens with a `DiscreteVar`, but then tell our `Sampler` to 
 We print the top 5 tokens with max and min logits. In the top 5 logits, IO appears first, but you can also find S. IO is put a probability much stronger than S, but the proba of S is still much higher than a random name.
 
 """
+
+
 # %%
 def evaluate_on_dataset(c: rc.Circuit, tokens: torch.Tensor, group: Optional[rc.Circuit] = None):
     """Run the circuit on all elements of tokens. Assumes the 'tokens' module exists in the circuit."""
@@ -344,6 +350,8 @@ logit_diff_circuit = rc.Add.minus(logit1, logit2)
 
 Let's add the labels to our circuit. The labels are `DiscreteVar`s inserted in the circuit and the `group` variable stores the order they are sampled from. As long as the same `group` is used between sentences and labels, they'll be kept in the same order.
 """
+
+
 # %%
 def add_labels_to_circuit(c: rc.Circuit, tokens: torch.Tensor, labels: torch.Tensor):
     """Run the circuit on all elements of tokens. Assumes the 'tokens' module exists in the circuit."""

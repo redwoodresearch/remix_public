@@ -1,4 +1,3 @@
-
 import warnings
 from functools import lru_cache
 from typing import Any, Dict, Optional
@@ -15,6 +14,7 @@ from rust_circuit.interop_rust import cached_circuit_by_hash
 from rust_circuit.module_library import load_model_id
 from scipy.special import softmax
 from torch.nn.functional import layer_norm, one_hot
+import remix_utils
 
 ##################  TOKENIZER ##################
 
@@ -123,14 +123,9 @@ class ParenDataset(Dataset):
         return (self.tokens_flat.value != ParenTokenizer.PAD_TOKEN).sum(-1)
 
     @classmethod
-    def load(
-        cls,
-        model_id="jun9_paren_balancer",
-        dataset_name="random_choice_len_40_extra_yeses_8",
-        device='cpu'
-    ):
-        assert dataset_name == 'random_choice_len_40_extra_yeses_8', "Only this dataset is bundled with REMIX"
-        df = pd.read_pickle('remix_d4_data/parens.zip')
+    def load(cls, model_id="jun9_paren_balancer", dataset_name="random_choice_len_40_extra_yeses_8", device="cpu"):
+        assert dataset_name == "random_choice_len_40_extra_yeses_8", "Only this dataset is bundled with REMIX"
+        df = pd.read_pickle("remix_d4_data/parens.zip")
         inputs = df[0].values
         labels = df[1].values
 
@@ -169,7 +164,10 @@ class ParenDataset(Dataset):
 
 @lru_cache
 def get_weights(model_id: str) -> Dict[str, torch.Tensor]:
-    circ_dict, _, _ = load_model_id(model_id)
+    if model_id == "jun9_paren_balancer":
+        circ_dict, _, _ = remix_utils.load_paren_balancer()
+    else:
+        circ_dict, _, _ = load_model_id(model_id)
     # we don't include spec child
     return {
         child.name[:-4]: child.cast_array().value  # strip _arr from end

@@ -75,7 +75,8 @@ import torch
 from rust_circuit.py_utils import I
 
 MAIN = __name__ == "__main__"
-device = "cuda:0"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device:", DEVICE)
 
 ```
 
@@ -448,7 +449,7 @@ Now we just run the scrubbed model forward!
 
 
 ```python
-eval_settings = ExperimentEvalSettings(device_dtype=device)
+eval_settings = ExperimentEvalSettings(device_dtype=DEVICE)
 scrubbed_out = ScrubbedExperiment(circuit, ref_datum, sampled_inputs, group, 11, ex._nodes).evaluate(
     eval_settings=eval_settings
 )

@@ -56,7 +56,8 @@ import torch
 from rust_circuit.py_utils import I
 
 MAIN = __name__ == "__main__"
-device = "cuda:0"  # for CI
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device:", DEVICE)
 
 
 # %%
@@ -153,6 +154,7 @@ The helper function will eventually be called by `FuncSampler`, which is a gener
 
 </details>
 """
+
 
 # %%
 def x0_val(d: Dataset) -> t.Tensor:
@@ -270,7 +272,7 @@ def get_parents_and_children(i: InterpNode):
 
 
 def step_sampler(parents_and_children: List[Tuple[InterpNode, InterpNode]]):
-    for (p, c) in parents_and_children:
+    for p, c in parents_and_children:
         c._sample_into(
             generator,
             ds,
@@ -488,7 +490,7 @@ assert treeify_first_clean == clean_tags(circuit)
 Now we just run the scrubbed model forward!
 """
 # %%
-eval_settings = ExperimentEvalSettings(device_dtype=device)
+eval_settings = ExperimentEvalSettings(device_dtype=DEVICE)
 scrubbed_out = ScrubbedExperiment(circuit, ref_datum, sampled_inputs, group, 11, ex._nodes).evaluate(
     eval_settings=eval_settings
 )
@@ -514,9 +516,9 @@ Suppose in the example above, you figured out that the output of the model is ch
 # %%
 if "SOLUTION":
     out2 = InterpNode(cond_sampler=FuncSampler(x0_or_x1_gt_3_agrees_with_label), name="out")
-    x0_prime2 = out2.make_descendant(FuncSampler(x0_val), name="x0'")  
-    x1_prime2 = out2.make_descendant(FuncSampler(x1_val), name="x1'")  
-    y_prime2 = out2.make_descendant(FuncSampler(label_val), name="y'") 
+    x0_prime2 = out2.make_descendant(FuncSampler(x0_val), name="x0'")
+    x1_prime2 = out2.make_descendant(FuncSampler(x1_val), name="x1'")
+    y_prime2 = out2.make_descendant(FuncSampler(label_val), name="y'")
 
     corr2 = Correspondence()
     corr2.add(out2, corr_root_matcher)
@@ -537,7 +539,7 @@ You suspect that `x0` directly influences `A` a lot, and you want to test this. 
 """
 # %%
 if "SOLUTION":
-    out3a = InterpNode(cond_sampler=ExactSampler(), name="out") 
+    out3a = InterpNode(cond_sampler=ExactSampler(), name="out")
     A_prime3a = out3a.make_descendant(ExactSampler(), name="A'")
     x0_prime3a = A_prime3a.make_descendant(UncondSampler(), name="x0'")
     y_prime3a = out3a.make_descendant(ExactSampler(), name="y'")
@@ -550,7 +552,7 @@ if "SOLUTION":
 
     out_batch3a = Experiment(loss, ds, corr3a, random_seed=11).scrub(20).evaluate(eval_settings)
 
-    out3b = InterpNode(cond_sampler=ExactSampler(), name="out")  
+    out3b = InterpNode(cond_sampler=ExactSampler(), name="out")
     A_prime3b = out3b.make_descendant(ExactSampler(), name="A'")
     x0_prime3b = A_prime3b.make_descendant(cond_sampler=ExactSampler(), name="x0'")
     y_prime3b = out3b.make_descendant(ExactSampler(), name="y'")
@@ -601,7 +603,7 @@ if "SOLUTION":
     corr4.add(y_prime4, rc.IterativeMatcher("labels"))
 
     out_batch4 = Experiment(loss, ds, corr4, random_seed=11).scrub(20).evaluate(eval_settings)
-    print(f"Scrubbed: {out_batch4.mean()}")
+    print(f"Scrubbed: {out_batch4.float().mean()}")
     print(f"Original: {loss_with_data.evaluate().mean()}")
 else:
     """TODO: Your code here"""

@@ -57,17 +57,18 @@ After today's material, you should be able to:
 ```python
 import os
 import sys
+import torch
 from rust_circuit.causal_scrubbing.dataset import Dataset
 from rust_circuit.causal_scrubbing.experiment import Experiment, ExperimentEvalSettings
 from rust_circuit.ui import cui
 from rust_circuit.ui.very_named_tensor import VeryNamedTensor
 from remix_d5_utils import IOIDataset, load_and_split_gpt2, load_logit_diff_model
 
-DEVICE = "cuda:0"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 MAIN = __name__ == "__main__"
 import time
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union, cast
-from typing import NamedTuple
 import plotly.express as px
 import rust_circuit as rc
 import torch
@@ -103,7 +104,7 @@ Thus, the name position is the same for all sequences. Because sentences are ali
 
 
 ```python
-ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1)
+ioi_dataset = IOIDataset(prompt_type="BABA", N=50, seed=42, nb_templates=1, device=DEVICE)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
 for k, idx in ioi_dataset.word_idx.items():
     assert (idx == idx[0]).all()

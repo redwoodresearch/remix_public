@@ -46,6 +46,8 @@ from typing import Optional
 import remix_utils
 
 MAIN = __name__ == "__main__"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device: ", DEVICE)
 
 ```
 
@@ -64,7 +66,7 @@ The `t.bind_w` circuit is short for "transformer bind weights" - it's a `Module`
 
 
 ```python
-ioi_dataset = IOIDataset(prompt_type="mixed", N=100)
+ioi_dataset = IOIDataset(prompt_type="mixed", N=100, device=DEVICE)
 MAX_LEN = ioi_dataset.prompts_toks.shape[1]
 circ_dict, tokenizer, model_info = remix_utils.load_gpt2_small_circuit()
 unbound_circuit = circ_dict["t.bind_w"]

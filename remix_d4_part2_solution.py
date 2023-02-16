@@ -46,19 +46,19 @@ from rust_circuit.causal_scrubbing.hypothesis import (
     InterpNode,
     UncondSampler,
     chain_excluding,
-    corr_root_matcher, 
+    corr_root_matcher,
 )
 from rust_circuit.algebric_rewrite import (
     residual_rewrite,
     split_to_concat,
 )
 from rust_circuit.model_rewrites import To, configure_transformer
-from rust_circuit.module_library import load_model_id
 from rust_circuit.py_utils import I
 from torch.nn.functional import binary_cross_entropy_with_logits
 
 import remix_d4_part2_test as tests
 from remix_d4_part2_setup import ParenDataset, ParenTokenizer, get_h00_open_vector
+import remix_utils
 
 MAIN = __name__ == "__main__"
 
@@ -78,7 +78,8 @@ PRINT_CIRCUITS = True
 ACTUALLY_RUN = True
 SLOW_EXPERIMENTS = True
 DEFAULT_CHECKS: ExperimentCheck = True
-EVAL_DEVICE = "cpu" # TBD: there are some dtype issues on CUDA right now
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Device:", DEVICE)
 # If you have less memory, you will want to reduce this and also add a batch_size
 MAX_MEMORY = 20_000_000_000
 BATCH_SIZE = 2000
@@ -94,10 +95,10 @@ If any of these operations confuse you, try printing out the circuit before and 
 Step 1: Initial loading
 """
 
-circ_dict, _, model_info = load_model_id(MODEL_ID)
+circ_dict, _, model_info = remix_utils.load_paren_balancer()
 circuit = circ_dict["t.bind_w"]
 
-#%% [markdown]
+# %% [markdown]
 """
 Step 2: We bind the model to an input by attaching a placeholder symbol input named "tokens" to the model. We then specify the attention mask that prevents attending to padding depends on this tokens array.
 
@@ -186,7 +187,7 @@ printer = rc.PrintHtmlOptions(
 if PRINT_CIRCUITS:
     printer.print(circuit)
 
-circuit = rc.cast_circuit(circuit, rc.TorchDeviceDtypeOp(device=EVAL_DEVICE))
+circuit = rc.cast_circuit(circuit, rc.TorchDeviceDtypeOp(device=DEVICE))
 
 # %% [markdown]
 """
@@ -194,7 +195,7 @@ circuit = rc.cast_circuit(circuit, rc.TorchDeviceDtypeOp(device=EVAL_DEVICE))
 We have a custom dataset class that precomputes some features of paren sequences, and handles pretty printing / etc.
 """
 
-ds = ParenDataset.load(device=EVAL_DEVICE)
+ds = ParenDataset.load(device=DEVICE)
 
 
 def bce_with_logits_loss(logits: torch.Tensor, labels: torch.Tensor):
@@ -234,11 +235,8 @@ def paren_experiment(
     if actually_run:
         logits = scrubbed.evaluate(
             ExperimentEvalSettings(
-                optim_settings=rc.OptimizationSettings(
-                    max_memory=MAX_MEMORY,
-                    scheduling_naive=True
-                ),
-                device_dtype=EVAL_DEVICE,
+                optim_settings=rc.OptimizationSettings(max_memory=MAX_MEMORY, scheduling_naive=True),
+                device_dtype=DEVICE,
                 optimize=True,
                 batch_size=batch_size,
             ),
@@ -380,6 +378,8 @@ horizon_cond = FuncSampler(lambda d: ParenDataset.unwrap(d).horizon_test)
 ```
 </details>
 """
+
+
 # %%
 def passes_count(d: ParenDataset) -> torch.Tensor:
     """
@@ -569,7 +569,7 @@ def separate_pos1(c: rc.Circuit) -> rc.Circuit:
     return split_to_concat(
         c,
         0,
-        [0, 1, torch.arange(2, 42, device=EVAL_DEVICE)],
+        [0, 1, torch.arange(2, 42, device=DEVICE)],
         partitioning_idx_names=["pos0", "pos1", "pos2_42"],
         use_dot=True,
     ).rename(f"{c.name}_concat")
@@ -837,6 +837,8 @@ if MAIN:
 r"""
 ### Part 4: The $\phi$ function
 """
+
+
 # %%
 def compute_phi_circuit(tokens: rc.Circuit):
     """
@@ -989,7 +991,7 @@ if "SKIP":
 
         return corr
 
-    #%%
+    # %%
     if MAIN:
         print("Ex 2_bonus_a: 2.0 depends on only pos1")
         ex2_bonus_a = paren_experiment(ex2_part2_circuit, ds, make_ex2_explicit_paths_corr(False, False, False))

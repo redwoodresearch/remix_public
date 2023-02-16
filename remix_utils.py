@@ -174,6 +174,7 @@ if MAIN:
     lrmodel = LogisticRegression()
     run_train_test(lrmodel, train_loader, test_loader, device="cuda", num_epochs=10)
 
+
 # %%
 # Check if the model looks reasonable
 def plot_pixel_contributions_to_logits(coef: np.ndarray):
@@ -335,13 +336,26 @@ if MAIN:
     plot_pixel_contributions_to_logits(coef_a)
     t.save(modela.state_dict(), "./remix_d2_data/model_a.pickle")
 
+
 # %%
-def load_gpt2_small_circuit():
-    """Load a circuit representing GPT2-small.
+def load_model_path(path: str):
+    """Load a .circ file.
 
     This requires that you have either RRFS read access or a downloaded ~/tensors_by_hash_cache folder.
     """
     from rust_circuit.module_library import load_transformer_model_string
 
-    with open("remix_d2_data/gelu_12_tied.circ") as f:
+    with open(path) as f:
         return load_transformer_model_string(f.read())
+
+
+def load_gpt2_small_circuit():
+    return load_model_path("remix_d2_data/gelu_12_tied.circ")
+
+
+def load_attention_only_2():
+    return load_model_path("remix_d3_data/attention_only_2.circ")
+
+
+def load_paren_balancer():
+    return load_model_path("remix_d4_data/jun9_paren_balancer.circ")

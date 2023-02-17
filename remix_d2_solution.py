@@ -207,6 +207,8 @@ This is kinda weird and subject to change, but the point of using this is that s
 
 Exercise: discuss with your partner why `mean_broken` below computes the wrong output. This is an important point, so call a TA if you don't feel confident. Write a new `mean` that works correctly.
 """
+
+
 # %%
 def mean_broken(x: Circuit) -> Circuit:
     """Compute the mean of x. This one doesn't work properly.
@@ -245,6 +247,8 @@ print("Expected 0.2, got: ", actual)
 
 Exercise: explain to your partner why `sum_last_broken` doesn't work properly. Fix the issue.
 """
+
+
 # %%
 def sum_last_broken(x: Circuit) -> Circuit:
     """Compute the sum of x along the last dimension. This one doesn't work properly.
@@ -542,6 +546,8 @@ zero_bias = ln.update("ln.w.bias", lambda _: Scalar(0.0, ()))
 ```
 </details>
 """
+
+
 # %%
 def add_elim_zeros(add: Add) -> Add:
     """Rewrite "add" to eliminate any operands that are Scalar(0.0).
@@ -704,6 +710,8 @@ The only reason to make something not batchable is to get a helpful error if we 
 
 </details>
 """
+
+
 # %%
 def layernorm_spec() -> ModuleSpec:
     """Return a ModuleSpec representing GPT's standard LayerNorm.
@@ -835,7 +843,7 @@ some_layernorm.print()
 print("\nAfter substitute: ")
 some_layernorm.substitute().print()
 
-t.testing.assert_allclose(some_layernorm.evaluate(), some_layernorm.substitute().evaluate())
+t.testing.assert_close(some_layernorm.evaluate(), some_layernorm.substitute().evaluate())
 
 # %%
 """
@@ -998,6 +1006,8 @@ Circuits provides two ways of indexing. For indexing by values that are known at
 
 Exercise: complete `token_embed`. It should be one line.
 """
+
+
 # %%
 def token_embed(embed_weight: Circuit, input_ids: Circuit) -> Circuit:
     """
@@ -1025,6 +1035,8 @@ Exercise: complete `pos_embed`.
 
 Tip: `Index` does support indexing by a `Tensor`, but when the `Tensor` is multidimensional, `Index` indexes into each dimension independently which is different than PyTorch and not what you want. Use `rc.GeneralFunction.gen_index` instead.
 """
+
+
 # %%
 def pos_embed(pos_embed_weight: Circuit, input_ids: Circuit) -> Circuit:
     """
@@ -1048,7 +1060,7 @@ input_ids = t.tensor([[9, 2, 0, 0, 3], [2, 5, 3, 4, 5]])
 pos_embed_weight = t.randn((max_len, hidden))
 actual = pos_embed(Array(pos_embed_weight), Array(input_ids)).evaluate()
 expected = t.stack((pos_embed_weight[:5], pos_embed_weight[:5]))
-t.testing.assert_allclose(actual, expected)
+t.testing.assert_close(actual, expected)
 
 
 # %%
@@ -1065,6 +1077,8 @@ Before we can do the attention module, we need to compute our attention mask.
 
 Exercise: implement `causal_mask`.
 """
+
+
 # %%
 def causal_mask(seq_len: int) -> t.Tensor:
     """
@@ -1101,6 +1115,8 @@ The multiply by zero is not strictly necessary. Even if the attention score was 
 </details>
 
 """
+
+
 # %%
 def apply_attention_mask(attn_scores: Circuit, mask: Circuit) -> Circuit:
     """Return attn_scores with invalid scores set to exactly -10000.0.
@@ -1281,6 +1297,8 @@ t.testing.assert_close(actual[0], ref_expected, atol=1e-4, rtol=1e-4)
 
 Exercise: implement `attention` by calling your previous functions, and then doing the remaining steps.
 """
+
+
 # %%
 def attention(
     x: Circuit,
@@ -1412,7 +1430,7 @@ assert actual.shape == (batch, seq_len, config.hidden_size)
 
 ref_block_expanded = remix_d2_utils.get_ref_block_expanded(ref_circuit, Array(rand_emb), weights)
 expected = ref_block_expanded.evaluate()
-t.testing.assert_allclose(actual, expected)
+t.testing.assert_close(actual, expected)
 
 # %%
 """
@@ -1420,6 +1438,8 @@ t.testing.assert_allclose(actual, expected)
 
 Exercise: implement `unembed` - it should just be one line.
 """
+
+
 # %%
 def unembed(x: Circuit, unembed_weight: Circuit) -> Circuit:
     """

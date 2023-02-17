@@ -2653,7 +2653,7 @@ assert len(slices) == len(expected_cases)
 for i, (expected, s) in enumerate(zip(expected_cases, slices)):
     print(f"Testing case {i}")
     actual = arr2d[s]
-    t.testing.assert_allclose(actual, expected)
+    t.testing.assert_close(actual, expected)
 
 ```
 

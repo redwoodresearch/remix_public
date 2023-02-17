@@ -753,7 +753,7 @@ print("Before substitute:")
 some_layernorm.print()
 print("\nAfter substitute: ")
 some_layernorm.substitute().print()
-t.testing.assert_allclose(some_layernorm.evaluate(), some_layernorm.substitute().evaluate())
+t.testing.assert_close(some_layernorm.evaluate(), some_layernorm.substitute().evaluate())
 
 ```
 
@@ -932,7 +932,7 @@ input_ids = t.tensor([[9, 2, 0, 0, 3], [2, 5, 3, 4, 5]])
 pos_embed_weight = t.randn((max_len, hidden))
 actual = pos_embed(Array(pos_embed_weight), Array(input_ids)).evaluate()
 expected = t.stack((pos_embed_weight[:5], pos_embed_weight[:5]))
-t.testing.assert_allclose(actual, expected)
+t.testing.assert_close(actual, expected)
 
 ```
 
@@ -1187,7 +1187,7 @@ actual = block.evaluate()
 assert actual.shape == (batch, seq_len, config.hidden_size)
 ref_block_expanded = remix_d2_utils.get_ref_block_expanded(ref_circuit, Array(rand_emb), weights)
 expected = ref_block_expanded.evaluate()
-t.testing.assert_allclose(actual, expected)
+t.testing.assert_close(actual, expected)
 
 ```
 

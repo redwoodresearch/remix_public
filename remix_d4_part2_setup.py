@@ -83,7 +83,8 @@ def compute_adjusted_p_open_after(circuit: rc.Array, model_id: Any) -> torch.Ten
         weights = get_adjusted_attn_factors(model_id)
     is_open = circuit.value == ParenTokenizer.OPEN_TOKEN
     # broadcast both to b * q * k
-    weighted_opens = weights[(circuit.value != ParenTokenizer.PAD_TOKEN).sum(-1)] * is_open[:, None, :]
+    idx = (circuit.value != ParenTokenizer.PAD_TOKEN).sum(-1).to(weights.device)
+    weighted_opens = weights[idx] * is_open[:, None, :]
     return weighted_opens.sum(-1)
 
 
@@ -112,7 +113,7 @@ class ParenDataset(Dataset):
 
     @property
     def horizon_test(self) -> torch.Tensor:
-        return torch.tensor(np.nanmax(self.p_open_after, axis=1) <= 0.5, dtype=self.tokens.value.dtype)
+        return (torch.nan_to_num(self.p_open_after, nan=-10000).max(dim=1)[0] <= 0.5).long()
 
     @property
     def strs(self):

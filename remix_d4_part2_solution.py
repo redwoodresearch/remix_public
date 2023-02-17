@@ -2,7 +2,7 @@
 # This document serves multiple purposes:
 #   - A reproduction of the experiments in the Paren Balancer causal scrubbing post
 #   - A causal scrubbing demo
-#   - A set of exercises for remix (hense the `if "SOLUTION"` blocks, and instructions)
+#   - A set of exercises for remix (hence the `if "SOLUTION"` blocks, and instructions)
 
 # %% [markdown]
 """
@@ -78,10 +78,12 @@ PRINT_CIRCUITS = True
 ACTUALLY_RUN = True
 SLOW_EXPERIMENTS = True
 DEFAULT_CHECKS: ExperimentCheck = True
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-print("Device:", DEVICE)
+#DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"
+EVAL_DEVICE = "cuda:0"
+print("Preparation on device:", DEVICE, "and evaluation on device:", EVAL_DEVICE)
 # If you have less memory, you will want to reduce this and also add a batch_size
-MAX_MEMORY = 20_000_000_000
+MAX_MEMORY = 70_000_000_000
 BATCH_SIZE = 2000
 
 # %% [markdown]
@@ -236,7 +238,7 @@ def paren_experiment(
         logits = scrubbed.evaluate(
             ExperimentEvalSettings(
                 optim_settings=rc.OptimizationSettings(max_memory=MAX_MEMORY, scheduling_naive=True),
-                device_dtype=DEVICE,
+                device_dtype=EVAL_DEVICE,
                 optimize=True,
                 batch_size=batch_size,
             ),
@@ -566,13 +568,15 @@ This can be acomplished by calling `split_to_concat()` (from algebraic_rewrites.
 
 def separate_pos1(c: rc.Circuit) -> rc.Circuit:
     "SOLUTION"
-    return split_to_concat(
+    out = split_to_concat(
         c,
         0,
         [0, 1, torch.arange(2, 42, device=DEVICE)],
         partitioning_idx_names=["pos0", "pos1", "pos2_42"],
         use_dot=True,
     ).rename(f"{c.name}_concat")
+    assert out.device == DEVICE
+    return out
 
 
 # TODO: add test for just this function
@@ -684,7 +688,7 @@ def p1_if_starts_open(d: ParenDataset):
     return torch.where(
         d.starts_with_open,
         d.p_open_after[:, 1],
-        torch.tensor(-1.0, dtype=torch.float32),
+        torch.tensor(-1.0, device=DEVICE, dtype=torch.float32),
     )
 
 
@@ -758,7 +762,7 @@ To do this we will rewrite the output of 0.0 as the sum of two terms: the [proje
 
 # %%
 
-h00_open_vector = get_h00_open_vector(MODEL_ID)
+h00_open_vector = get_h00_open_vector(MODEL_ID).to(DEVICE)
 
 
 def project_into_direction(c: rc.Circuit, v: torch.Tensor = h00_open_vector) -> rc.Circuit:

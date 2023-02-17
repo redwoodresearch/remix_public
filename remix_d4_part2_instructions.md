@@ -76,9 +76,10 @@ PRINT_CIRCUITS = True
 ACTUALLY_RUN = True
 SLOW_EXPERIMENTS = True
 DEFAULT_CHECKS: ExperimentCheck = True
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-print("Device:", DEVICE)
-MAX_MEMORY = 20000000000
+DEVICE = "cpu"
+EVAL_DEVICE = "cuda:0"
+print("Preparation on device:", DEVICE, "and evaluation on device:", EVAL_DEVICE)
+MAX_MEMORY = 70000000000
 BATCH_SIZE = 2000
 
 ```
@@ -215,7 +216,7 @@ def paren_experiment(
         logits = scrubbed.evaluate(
             ExperimentEvalSettings(
                 optim_settings=rc.OptimizationSettings(max_memory=MAX_MEMORY, scheduling_naive=True),
-                device_dtype=DEVICE,
+                device_dtype=EVAL_DEVICE,
                 optimize=True,
                 batch_size=batch_size,
             )
@@ -621,7 +622,7 @@ To do this we will rewrite the output of 0.0 as the sum of two terms: the [proje
 
 
 ```python
-h00_open_vector = get_h00_open_vector(MODEL_ID)
+h00_open_vector = get_h00_open_vector(MODEL_ID).to(DEVICE)
 
 
 def project_into_direction(c: rc.Circuit, v: torch.Tensor = h00_open_vector) -> rc.Circuit:
